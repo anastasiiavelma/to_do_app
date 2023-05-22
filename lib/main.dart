@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:to_do_app/components/eror_dialog.dart';
+import 'package:to_do_app/pages/tasks_screen.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -21,6 +24,25 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void navigateToTasksScreen(dynamic data) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TasksScreen(data: data),
+        ),
+      );
+    }
+
+    Future<void> fetchDataFromAPI(BuildContext context) async {
+      try {
+        final data =
+            await http.get(Uri.parse('https://to-do.softwars.com.ua/'));
+        navigateToTasksScreen(data);
+      } catch (e) {
+        ErrorDialog.showErrorDialog(context);
+      }
+    }
+
     return Scaffold(
         body: Center(
       child: Container(
@@ -37,7 +59,9 @@ class MyHomePage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(top: 200.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                fetchDataFromAPI(context);
+              },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(140, 50),
                 backgroundColor: const Color(0xFFFFD600),
