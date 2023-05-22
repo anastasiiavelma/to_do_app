@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/components/eror_dialog.dart';
-import 'package:to_do_app/pages/tasks_screen.dart';
+import 'package:to_do_app/pages/task_screen.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       home: MyHomePage(),
     );
@@ -28,7 +29,7 @@ class MyHomePage extends StatelessWidget {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TasksScreen(data: data),
+          builder: (context) => TaskScreen(data: data),
         ),
       );
     }
