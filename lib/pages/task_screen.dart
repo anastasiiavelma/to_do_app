@@ -29,7 +29,7 @@ class _TaskScreenState extends State<TaskScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFA9A9A9), // Прозорий фон AppBar
+        backgroundColor: const Color(0xFFA9A9A9), // Прозорий фон AppBar
         elevation: 0,
         actions: [
           _buildButton('Усі'),
@@ -51,7 +51,7 @@ class _TaskScreenState extends State<TaskScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 58, 14, 25),
+              padding: const EdgeInsets.fromLTRB(14, 25, 14, 0),
               child: Container(
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -59,17 +59,23 @@ class _TaskScreenState extends State<TaskScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Expanded(child: TaskListScreen()),
+            const Expanded(child: TaskListScreen()),
           ],
         ),
       )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
+      floatingActionButton: Container(
+        height: 71, // Adjust the height of the FloatingActionButton
+        width: 71,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            // Add
+          },
+          backgroundColor: const Color(0xFFFFD600),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
