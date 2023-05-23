@@ -121,8 +121,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           height: 5,
                         ),
                         Text(
-                          DateFormat('dd.MM.yyyy')
-                              .format(DateTime.parse(task.finishDate)),
+                          DateFormat('dd.MM.yyyy').format(
+                              DateTime.parse(task.finishDate.toString())),
                           style: const TextStyle(
                             color: Color(0xFF383838),
                             fontSize: 11,

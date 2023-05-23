@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:to_do_app/pages/task_detail_screen.dart';
 import '../components/tasks_list.dart';
 
 class TaskScreen extends StatefulWidget {
@@ -48,33 +48,34 @@ class _TaskScreenState extends State<TaskScreen> {
             Color(0xFF383838),
           ],
         )),
-        child: Column(
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 25, 14, 0),
-              child: Container(
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [],
-                ),
-              ),
-            ),
-            const Expanded(child: TaskListScreen()),
+            Expanded(child: TaskListScreen()),
           ],
         ),
       )),
-      floatingActionButton: Container(
-        height: 71, // Adjust the height of the FloatingActionButton
-        width: 71,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-        ),
+      floatingActionButton: SizedBox(
+        height: 70, // Adjust the height of the FloatingActionButton
+        width: 70,
         child: FloatingActionButton(
           onPressed: () {
-            // Add
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      const TaskDetailScreen()), // Replace SecondPage with the desired page you want to navigate to
+            );
           },
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25), // Half of the width
+          ),
           backgroundColor: const Color(0xFFFFD600),
-          child: const Icon(Icons.add),
+          child: const Icon(
+            color: Color(0xFF383838),
+            Icons.add,
+            size: 45,
+          ),
         ),
       ),
     );
@@ -99,7 +100,7 @@ class _TaskScreenState extends State<TaskScreen> {
           child: Text(
             buttonName,
             style: const TextStyle(
-              color: Colors.black,
+              color: Color(0xFF383838),
               fontSize: 18,
               fontWeight: FontWeight.w500,
               fontFamily: 'SanFrancisco',
