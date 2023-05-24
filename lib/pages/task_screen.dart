@@ -51,6 +51,9 @@ class _TaskScreenState extends State<TaskScreen> {
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            SizedBox(
+              height: 25,
+            ),
             Expanded(child: TaskListScreen()),
           ],
         ),

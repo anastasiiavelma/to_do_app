@@ -20,15 +20,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  final int _status = 1;
+  int _type = 1;
+  int? isUrgent;
+  DateTime? _selectedDate;
+  final int _urgent = 1;
 
   String generateUniqueId() {
-    final uuid = Uuid();
+    const uuid = Uuid();
     return uuid.v4();
   }
-
-  bool isUrgent = false;
-  DateTime? _selectedDate;
-  int? _type;
 
   @override
   void dispose() {
@@ -42,46 +43,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Color(0xFFA9A9A9),
     ));
-
-    Future<void> createTask() async {
-      final task = TaskModel(
-        taskId: generateUniqueId(),
-        status: 1,
-        name: _nameController.text,
-        type: _type,
-        description: _descriptionController.text,
-        finishDate: DateTime.parse(_dateController.text),
-        urgent: isUrgent ? true : false,
-        syncTime: DateTime.now(),
-        file: '',
-      );
-
-      final taskJson = task.toJson();
-
-      try {
-        final response = await http.post(
-          Uri.parse('https://to-do.softwars.com.ua/tasks'),
-          body: taskJson,
-        );
-
-        if (response.statusCode == 201) {
-          final responseData = json.decode(response.body);
-          final taskJson = responseData['data'][0];
-          final createdTask = TaskModel.fromJson(taskJson);
-
-          // Task created successfully
-          print('Task created successfully: ${createdTask.taskId}');
-        } else {
-          // Error creating task
-          print('Error creating task. Status code: ${response.statusCode}');
-          // Handle the error accordingly
-        }
-      } catch (error) {
-        // Exception occurred during the HTTP request
-        print('Error creating task: $error');
-        // Handle the exception accordingly
-      }
-    }
 
     final nameOfTaskField = TextField(
       controller: _nameController,
@@ -224,7 +185,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         activeColor: const Color(0xFFFFD600),
                         onChanged: (value) {
                           setState(() {
-                            _type = value;
+                            _type = value!;
                           });
                         },
                       ),
@@ -244,7 +205,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         activeColor: const Color(0xFFFFD600),
                         onChanged: (value) {
                           setState(() {
-                            _type = value;
+                            _type = value!;
                           });
                         },
                       ),
@@ -301,12 +262,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     child: Row(
                       children: [
                         Radio(
-                          value: true,
+                          value: 1,
                           groupValue: isUrgent,
                           activeColor: const Color(0xFFFFD600),
                           onChanged: (value) {
                             setState(() {
-                              isUrgent = value ?? false;
+                              isUrgent = value!;
                             });
                           },
                         ),
@@ -328,6 +289,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         createTask();
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(169, 50),
@@ -354,5 +316,40 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         ),
       ),
     ));
+  }
+
+  Future<void> createTask() async {
+    try {
+      final name = _nameController.text;
+      final desc = _descriptionController.text;
+      final finishDate = DateTime.parse(_dateController.text);
+      final status = _status;
+      final type = _type;
+      final urgent = _urgent == 1 ? '1' : '0';
+
+      final body = [
+        {
+          "taskId": generateUniqueId().toString(),
+          "status": status,
+          "name": name,
+          "type": type.toString(),
+          "description": desc,
+          "finishDate": finishDate.toIso8601String(),
+          "urgent": urgent,
+          "syncTime": DateTime.now().toIso8601String(),
+        }
+      ];
+
+      const url = 'https://to-do.softwars.com.ua/tasks';
+      final uri = Uri.parse(url);
+      final response = await http.post(uri,
+          body: jsonEncode(body),
+          headers: {'Content-Type': 'application/json'});
+
+      print(response.statusCode);
+      print(response.body);
+    } catch (e) {
+      print("Smt was wrong");
+    }
   }
 }

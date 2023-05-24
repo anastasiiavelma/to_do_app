@@ -1,11 +1,11 @@
 class TaskModel {
   final String taskId;
-  final int status;
+  int status;
   final String name;
   final int? type;
   final String description;
   final DateTime finishDate;
-  final bool urgent;
+  final int? urgent;
   final DateTime syncTime;
   final String file;
 
@@ -21,20 +21,6 @@ class TaskModel {
     required this.file,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'taskId': taskId,
-      'status': status,
-      'name': name,
-      'type': type,
-      'description': description,
-      'finishDate': finishDate.toIso8601String(),
-      'urgent': urgent,
-      'syncTime': syncTime.toIso8601String(),
-      'file': file,
-    };
-  }
-
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     return TaskModel(
       taskId: json['taskId'],
@@ -42,10 +28,10 @@ class TaskModel {
       name: json['name'],
       type: json['type'],
       description: json['description'],
+      file: json['file'],
       finishDate: DateTime.parse(json['finishDate']),
       urgent: json['urgent'],
       syncTime: DateTime.parse(json['syncTime']),
-      file: json['file'],
     );
   }
 }
