@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,26 +8,45 @@ import 'package:to_do_app/api/task_model.dart';
 import 'package:uuid/uuid.dart';
 
 class TaskDetailScreen extends StatefulWidget {
-  const TaskDetailScreen({Key? key}) : super(key: key);
+  final TaskModel? task;
+  final bool isEdit;
+  const TaskDetailScreen({
+    Key? key,
+    this.task,
+    this.isEdit = false,
+  }) : super(key: key);
 
   @override
-  _TaskDetailScreenState createState() => _TaskDetailScreenState();
+  TaskDetailScreenState createState() => TaskDetailScreenState();
 }
 
-class _TaskDetailScreenState extends State<TaskDetailScreen> {
+class TaskDetailScreenState extends State<TaskDetailScreen> {
   List<TaskModel> tasks = [];
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  final int _status = 1;
-  int _type = 1;
+  int? _type;
   int? isUrgent;
   DateTime? _selectedDate;
-  final int _urgent = 1;
+  bool isEdit = false;
 
   String generateUniqueId() {
     const uuid = Uuid();
     return uuid.v4();
+  }
+
+  @override
+  void initState() {
+    if (widget.task != null) {
+      TaskModel task = widget.task!;
+      _nameController.text = task.name;
+      _descriptionController.text = task.description;
+      _dateController.text = DateFormat('yyyy-MM-dd').format(task.finishDate);
+      _type = task.type == 1 ? 1 : 2;
+      isUrgent = task.urgent == 0 ? 0 : 1;
+      isEdit = widget.isEdit;
+    }
+    super.initState();
   }
 
   @override
@@ -54,11 +72,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           fontFamily: 'SanFrancisco',
           fontSize: 24,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF383838), // Set the desired text color for the label
+          color: Color(0xFF383838),
         ),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.transparent, // Установите прозрачный цвет рамки
+            color: Colors.transparent,
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -74,16 +92,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         contentPadding: EdgeInsets.fromLTRB(30, 17, 0, 0),
         floatingLabelBehavior: FloatingLabelBehavior.never,
         hintText: 'Додати опис...',
-        labelText: 'Додати опис..',
+        labelText: 'Додати опис...',
         labelStyle: TextStyle(
           fontFamily: 'SanFrancisco',
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF383838), // Set the desired text color for the label
+          color: Color(0xFF383838),
         ),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.transparent, // Установите прозрачный цвет рамки
+            color: Colors.transparent,
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -128,6 +146,28 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: Color(0xFF383838),
+        ),
+      ),
+    );
+    final createTaskButton = ElevatedButton(
+      onPressed: () {
+        isEdit ? updateTaskData() : createTask();
+        Navigator.pop(context);
+      },
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(169, 50),
+        backgroundColor: const Color(0xFFFFD600),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: Text(
+        isEdit ? 'Оновити' : 'Створити',
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 24,
+          fontWeight: FontWeight.w500,
+          fontFamily: 'SanFrancisco',
         ),
       ),
     );
@@ -286,28 +326,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        createTask();
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(169, 50),
-                        backgroundColor: const Color(0xFFFFD600),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      child: const Text(
-                        'Створити',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'SanFrancisco',
-                        ),
-                      ),
-                    ),
+                    child: createTaskButton,
                   ),
                 ),
               ],
@@ -318,14 +337,52 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     ));
   }
 
+  Future<void> updateTaskData() async {
+    try {
+      final task = widget.task;
+      final taskId = task?.taskId;
+      final name = _nameController.text;
+      final desc = _descriptionController.text;
+      final finishDate = DateTime.parse(_dateController.text);
+      final status = task!.status;
+      final type = task.type;
+      final urgent = task.urgent;
+
+      final body = {
+        "status": status,
+        "name": name,
+        "type": type.toString(),
+        "description": desc,
+        "finishDate": finishDate.toIso8601String(),
+        "urgent": urgent,
+        "syncTime": DateTime.now().toIso8601String(),
+      };
+      final url = 'https://to-do.softwars.com.ua/tasks/$taskId';
+      final uri = Uri.parse(url);
+      final response = await http.put(
+        uri,
+        body: jsonEncode(body),
+        headers: {'Content-Type': 'application/json'},
+      );
+      debugPrint('${response.statusCode}');
+      debugPrint(response.body);
+      if (response.statusCode == 200) {
+        debugPrint('Updating is success');
+      } else {
+        debugPrint('Update is failed');
+      }
+    } catch (e) {
+      debugPrint("Something went wrong");
+    }
+  }
+
   Future<void> createTask() async {
     try {
       final name = _nameController.text;
       final desc = _descriptionController.text;
       final finishDate = DateTime.parse(_dateController.text);
-      final status = _status;
+      const status = 1;
       final type = _type;
-      final urgent = _urgent == 1 ? '1' : '0';
 
       final body = [
         {
@@ -335,7 +392,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           "type": type.toString(),
           "description": desc,
           "finishDate": finishDate.toIso8601String(),
-          "urgent": urgent,
+          "urgent": isUrgent,
           "syncTime": DateTime.now().toIso8601String(),
         }
       ];
@@ -346,10 +403,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           body: jsonEncode(body),
           headers: {'Content-Type': 'application/json'});
 
-      print(response.statusCode);
-      print(response.body);
+      debugPrint('${response.statusCode}');
+      debugPrint(response.body);
     } catch (e) {
-      print("Smt was wrong");
+      debugPrint("Smt was wrong");
     }
   }
 }

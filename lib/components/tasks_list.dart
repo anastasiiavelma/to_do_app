@@ -7,19 +7,43 @@ import 'package:intl/intl.dart';
 import 'package:to_do_app/pages/task_detail_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
-  const TaskListScreen({super.key});
+  const TaskListScreen({
+    super.key,
+  });
 
   @override
-  _TaskListScreenState createState() => _TaskListScreenState();
+  TaskListScreenState createState() => TaskListScreenState();
 }
 
-class _TaskListScreenState extends State<TaskListScreen> {
+class TaskListScreenState extends State<TaskListScreen> {
   List<TaskModel> tasks = [];
 
   @override
   void initState() {
     super.initState();
     fetchTasks();
+    refreshTasks();
+  }
+
+  Future<void> navigateToTaskDetail(TaskModel task) async {
+    final updatedTask = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskDetailScreen(
+          task: task,
+          isEdit: true,
+        ),
+      ),
+    );
+
+    if (updatedTask != null) {
+      setState(() {
+        final index = tasks.indexWhere((t) => t.taskId == updatedTask.taskId);
+        if (index != -1) {
+          tasks[index] = updatedTask;
+        }
+      });
+    }
   }
 
   @override
@@ -30,23 +54,26 @@ class _TaskListScreenState extends State<TaskListScreen> {
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           final task = tasks[index];
-
           return GestureDetector(
-            onTap: () {
-              openTaskEditScreen(task);
-            },
+            onTap: () {},
             child: Dismissible(
               key: Key(task.taskId),
               direction: DismissDirection.endToStart,
-              background: Container(
-                color: Colors.red,
-                child: const Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 16.0),
-                    child: Icon(
-                      Icons.delete,
-                      color: Colors.white,
+              background: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF8939),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 16.0),
+                      child: Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -56,92 +83,98 @@ class _TaskListScreenState extends State<TaskListScreen> {
               },
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
-                  ),
-                  decoration: BoxDecoration(
-                    color: task.urgent == 0
-                        ? const Color(0xFFDBDBDB)
-                        : const Color(0xFFFF8989),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      task.type == 1
-                          ? const Icon(
-                              Icons.home_filled,
-                              color: Color(0xFF383838),
-                              size: 16,
-                            )
-                          : const Icon(
-                              Icons.work_outline_outlined,
-                              color: Color(0xFF383838),
-                              size: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    navigateToTaskDetail(task);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: task.urgent == 1
+                          ? const Color(0xFFFF8989)
+                          : const Color(0xFFDBDBDB),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        task.type == 1
+                            ? const Icon(
+                                Icons.home_filled,
+                                color: Color(0xFF383838),
+                                size: 16,
+                              )
+                            : const Icon(
+                                Icons.work_outline_outlined,
+                                color: Color(0xFF383838),
+                                size: 16,
+                              ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 11.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  task.name,
+                                  style: const TextStyle(
+                                    color: Color(0xFF383838),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  DateFormat('dd.MM.yyyy').format(
+                                      DateTime.parse(
+                                          task.finishDate.toString())),
+                                  style: const TextStyle(
+                                    color: Color(0xFF383838),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 11.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                task.description,
-                                style: const TextStyle(
-                                  color: Color(0xFF383838),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Text(
-                                DateFormat('dd.MM.yyyy').format(
-                                    DateTime.parse(task.finishDate.toString())),
-                                style: const TextStyle(
-                                  color: Color(0xFF383838),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
-                      ),
-                      GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          setState(() {
-                            if (task.status == 2) {
-                              task.status = 1;
-                            } else {
-                              task.status = 2;
-                            }
-                          });
-                          updateTaskStatus(task.taskId, task.status);
-                        },
-                        child: Container(
-                          width: 33,
-                          height: 33,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                                width: 1, color: const Color(0xFF383838)),
-                            borderRadius: BorderRadius.circular(10),
-                            color: task.status == 1
-                                ? const Color(0xFFFBEFB4)
-                                : Colors.transparent,
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            setState(() {
+                              if (task.status == 1) {
+                                task.status = 2;
+                              } else if (task.status == 2) {
+                                task.status = 1;
+                              }
+                            });
+                            updateTaskStatus(task.taskId, task.status);
+                          },
+                          child: Container(
+                            width: 33,
+                            height: 33,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  width: 1, color: const Color(0xFF383838)),
+                              borderRadius: BorderRadius.circular(10),
+                              color: task.status == 2
+                                  ? const Color(0xFFFBEFB4)
+                                  : Colors.transparent,
+                            ),
+                            child: task.status == 2
+                                ? const Icon(Icons.check,
+                                    color: Color(0xFF383838), size: 30)
+                                : null,
                           ),
-                          child: task.status == 1
-                              ? const Icon(Icons.check,
-                                  color: Color(0xFF383838), size: 30)
-                              : null,
-                        ),
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -150,19 +183,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
         },
       ),
     );
-  }
-
-  void openTaskEditScreen(TaskModel task) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const TaskDetailScreen(),
-      ),
-    ).then((updatedTask) {
-      if (updatedTask != null) {
-        updateTaskStatus(updatedTask.taskId, updatedTask.status);
-      }
-    });
   }
 
   Future<void> refreshTasks() async {
@@ -180,12 +200,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
       );
 
       if (response.statusCode == 200) {
-        print('Task status updated');
+        debugPrint('Task status updated');
       } else {
-        print('Failed to update task status: ${response.statusCode}');
+        debugPrint('Failed to update task status: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error occurred while updating task status: $e');
+      debugPrint('Error occurred while updating task status: $e');
     }
   }
 
@@ -196,6 +216,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       final taskList = jsonData['data'] as List<dynamic>;
+
+      // taskList.sort((a, b) {
+      //   final DateTime dateA = DateTime.parse(a['finishDate']);
+      //   final DateTime dateB = DateTime.parse(b['finishDate']);
+      //   return dateA.compareTo(dateB);
+      // });
 
       setState(() {
         tasks = taskList.map((taskData) {
@@ -213,7 +239,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         }).toList();
       });
     } else {
-      print('Помилка при отриманні завдань: ${response.statusCode}');
+      debugPrint('Помилка при отриманні завдань: ${response.statusCode}');
     }
   }
 
@@ -224,13 +250,13 @@ class _TaskListScreenState extends State<TaskListScreen> {
       );
 
       if (response.statusCode == 200) {
-        print('Task deleted');
+        debugPrint('Task deleted');
         await fetchTasks();
       } else {
-        print('Failed to delete task: ${response.statusCode}');
+        debugPrint('Failed to delete task: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error occurred while deleting task: $e');
+      debugPrint('Error occurred while deleting task: $e');
     }
   }
 }

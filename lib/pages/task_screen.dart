@@ -29,7 +29,7 @@ class _TaskScreenState extends State<TaskScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFA9A9A9), // Прозорий фон AppBar
+        backgroundColor: const Color(0xFFA9A9A9),
         elevation: 0,
         actions: [
           _buildButton('Усі'),
